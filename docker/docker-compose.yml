@@ -1,0 +1,29 @@
+services:
+  app:
+    build:
+      context: ./../
+    container_name: pocketkey-test-app
+    ports:
+      - "${APP_SERVICE_PORT}:${APP_SERVICE_PORT}"
+      - "${APP_SERVICE_PORT_SSL}:${APP_SERVICE_PORT_SSL}"
+    environment:
+      - APP_SERVICE_PORT=${APP_SERVICE_PORT}
+      - APP_SERVICE_PORT_SSL=${APP_SERVICE_PORT_SSL}
+      - APP_SSL_KEYSTORE_PATH=${APP_SSL_KEYSTORE_PATH}
+      - APP_SSL_KEYSTORE_PASSWORD=${APP_SSL_KEYSTORE_PASSWORD}
+      - APP_SSL_TRUSTSTORE_PATH=${APP_SSL_TRUSTSTORE_PATH}
+      - APP_SSL_TRUSTSTORE_PASSWORD=${APP_SSL_TRUSTSTORE_PASSWORD}
+    volumes:
+      - ./confs/key_stores/api_server_keystore.p12:/app/ssl/keystore.p12
+      - ./confs/key_stores/api_consumer_truststore.p12:/app/ssl/truststore.p12
+  nginx:
+    image: nginx:1.27
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./confs/nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./confs/nginx/certs:/etc/nginx/certs/
+    depends_on:
+      - app
